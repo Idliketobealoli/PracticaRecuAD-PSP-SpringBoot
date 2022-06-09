@@ -20,8 +20,6 @@ public class CreateAlumnoDTO {
     @Email(regexp = ".*@.*\\..*", message = "Must be a valid Email")
     private String email;
 
-    private String image;
-
     private Curso curso;
 
     private Set<Performance> modulos;

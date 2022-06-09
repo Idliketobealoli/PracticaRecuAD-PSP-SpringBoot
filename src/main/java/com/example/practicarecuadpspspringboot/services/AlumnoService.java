@@ -19,11 +19,11 @@ import java.util.UUID;
 public class AlumnoService {
     private final AlumnoRepository repository;
 
-    public Optional<List<Alumno>> findAlumnoByName(String name) {
+    public List<Alumno> findAlumnoByName(String name) {
         return repository.findByNameLikeIgnoreCase(name);
     }
 
-    public Optional<Page<Alumno>> findAlumnoByName(String name, Pageable page) {
+    public Page<Alumno> findAlumnoByName(String name, Pageable page) {
         return repository.findByNameLikeIgnoreCase(name, page);
     }
 
@@ -39,7 +39,6 @@ public class AlumnoService {
         Alumno alumno = Alumno.builder()
                 .name(newAlumno.getName())
                 .email(newAlumno.getEmail())
-                .image(newAlumno.getImage())
                 .curso(newAlumno.getCurso())
                 .modulos(newAlumno.getModulos())
                 .build();

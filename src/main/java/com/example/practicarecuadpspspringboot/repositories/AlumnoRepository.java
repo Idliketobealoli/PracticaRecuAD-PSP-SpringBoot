@@ -12,8 +12,8 @@ import java.util.UUID;
 
 @Repository
 public interface AlumnoRepository extends JpaRepository<Alumno, UUID> {
-    Optional<List<Alumno>> findByNameLikeIgnoreCase(String name);
-    Optional<Page<Alumno>> findByNameLikeIgnoreCase(String name, Pageable pageable);
+    List<Alumno> findByNameLikeIgnoreCase(String name);
+    Page<Alumno> findByNameLikeIgnoreCase(String name, Pageable pageable);
 
     Optional<Alumno> findByEmail(String email);
 }

@@ -9,13 +9,11 @@ import org.springframework.data.annotation.CreatedDate;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
-import java.util.Set;
 import java.util.UUID;
 
-@Entity
+@Entity(name = "modulo")
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
