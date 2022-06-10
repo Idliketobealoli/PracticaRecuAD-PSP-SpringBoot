@@ -20,6 +20,7 @@ public class AlumnoMapper {
         return modelMapper.map(alumno, AlumnoDTO.class);
     }
 
+    @Deprecated
     public Alumno fromDTO(AlumnoDTO alumnoDTO) {
         return modelMapper.map(alumnoDTO, Alumno.class);
     }
@@ -38,6 +39,7 @@ public class AlumnoMapper {
     }
      */
 
+    @Deprecated
     public ListAlumnoDTO toListDTO(List<Alumno> alumnos) {
         ListAlumnoDTO listDTO = new ListAlumnoDTO();
         listDTO.setData(alumnos.stream().map(this::toDTO).collect(Collectors.toList()));

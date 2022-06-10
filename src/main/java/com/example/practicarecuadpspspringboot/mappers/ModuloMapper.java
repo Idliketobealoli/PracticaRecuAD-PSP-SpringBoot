@@ -20,6 +20,7 @@ public class ModuloMapper {
         return modelMapper.map(modulo, ModuloDTO.class);
     }
 
+    @Deprecated
     public Modulo fromDTO (ModuloDTO moduloDTO) {
         return modelMapper.map(moduloDTO, Modulo.class);
     }
@@ -32,6 +33,7 @@ public class ModuloMapper {
         return modulos.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
+    @Deprecated
     public ListModuloDTO toListDTO(List<Modulo> modulos) {
         ListModuloDTO listDTO = new ListModuloDTO();
         listDTO.setData(modulos.stream().map(this::toDTO).collect(Collectors.toList()));

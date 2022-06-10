@@ -20,6 +20,7 @@ public class CursoMapper {
         return modelMapper.map(curso, CursoDTO.class);
     }
 
+    @Deprecated
     public Curso fromDTO(CursoDTO cursoDTO) {
         return modelMapper.map(cursoDTO, Curso.class);
     }
@@ -32,6 +33,7 @@ public class CursoMapper {
         return cursos.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
+    @Deprecated
     public ListCursoDTO toListDTO(List<Curso> cursos) {
         ListCursoDTO listDTO = new ListCursoDTO();
         listDTO.setData(cursos.stream().map(this::toDTO).collect(Collectors.toList()));
