@@ -23,6 +23,7 @@ public class CursoService {
         return repository.findByNameLikeIgnoreCase(name);
     }
 
+    @Deprecated
     public Optional<Page<Curso>> findCursoByName(String name, Pageable page) {
         return repository.findByNameLikeIgnoreCase(name, page);
     }
@@ -35,6 +36,7 @@ public class CursoService {
         return repository.findByAcronym(acronym);
     }
 
+    @Deprecated
     public Curso createCurso(CreateCursoDTO newCurso) {
         Curso curso = Curso.builder()
                 .number(newCurso.getNumber())

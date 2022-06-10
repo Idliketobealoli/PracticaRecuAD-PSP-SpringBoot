@@ -23,6 +23,7 @@ public class ModuloService {
         return repository.findByNameLikeIgnoreCase(name);
     }
 
+    @Deprecated
     public Optional<Page<Modulo>> findModuloByName(String name, Pageable page) {
         return repository.findByNameLikeIgnoreCase(name, page);
     }
@@ -35,6 +36,7 @@ public class ModuloService {
         return repository.findByAcronym(acronym);
     }
 
+    @Deprecated
     public Modulo createModulo(CreateModuloDTO newModulo) {
         Modulo modulo = Modulo.builder()
                 .name(newModulo.getName())

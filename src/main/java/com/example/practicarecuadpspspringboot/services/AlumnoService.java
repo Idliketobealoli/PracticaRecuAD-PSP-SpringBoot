@@ -23,6 +23,7 @@ public class AlumnoService {
         return repository.findByNameLikeIgnoreCase(name);
     }
 
+    @Deprecated
     public Page<Alumno> findAlumnoByName(String name, Pageable page) {
         return repository.findByNameLikeIgnoreCase(name, page);
     }
@@ -35,6 +36,7 @@ public class AlumnoService {
         return repository.findByEmail(email);
     }
 
+    @Deprecated
     public Alumno createAlumno(CreateAlumnoDTO newAlumno) {
         Alumno alumno = Alumno.builder()
                 .name(newAlumno.getName())
