@@ -10,6 +10,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -25,6 +26,7 @@ public class Curso {
     private UUID id = UUID.randomUUID();
 
     @NotBlank(message = "Number cannot be blank")
+    @Min(value = 1, message = "Minimum must be 1")
     private int number;
 
     @NotBlank(message = "Name cannot be blank")

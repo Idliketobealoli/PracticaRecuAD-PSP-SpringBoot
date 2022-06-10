@@ -3,12 +3,14 @@ package com.example.practicarecuadpspspringboot.controllers;
 import com.example.practicarecuadpspspringboot.config.APIConfig;
 import com.example.practicarecuadpspspringboot.dto.alumnoDTO.AlumnoDTO;
 import com.example.practicarecuadpspspringboot.dto.alumnoDTO.CreateAlumnoDTO;
+import com.example.practicarecuadpspspringboot.dto.alumnoDTO.ListAlumnoPageDTO;
 import com.example.practicarecuadpspspringboot.errors.GenericBadRequestException;
 import com.example.practicarecuadpspspringboot.errors.alumno.AlumnoBadRequestException;
 import com.example.practicarecuadpspspringboot.errors.alumno.AlumnoNotFoundException;
 import com.example.practicarecuadpspspringboot.errors.alumno.AlumnosNotFoundException;
 import com.example.practicarecuadpspspringboot.mappers.AlumnoMapper;
 import com.example.practicarecuadpspspringboot.model.Alumno;
+import com.example.practicarecuadpspspringboot.model.Performance;
 import com.example.practicarecuadpspspringboot.repositories.AlumnoRepository;
 import com.example.practicarecuadpspspringboot.services.AlumnoService;
 import com.example.practicarecuadpspspringboot.services.storage.StorageService;
@@ -16,11 +18,13 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -86,9 +90,24 @@ public class AlumnoController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<AlumnoDTO> findById(@PathVariable String id) {
-        Alumno alumno = repository.findById(UUID.fromString(id)).orElse(null);
+        Alumno alumno = service.findAlumnoById(UUID.fromString(id)).orElse(null);
         if (alumno == null) {
             throw new AlumnoNotFoundException(id);
+        } else {
+            return ResponseEntity.ok(mapper.toDTO(alumno));
+        }
+    }
+
+    @ApiOperation(value = "Find Alumno by email", notes = "Finds an Alumno by email")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK", response = AlumnoDTO.class),
+            @ApiResponse(code = 404, message = "Not Found", response = AlumnoNotFoundException.class)
+    })
+    @GetMapping("/email={email}")
+    public ResponseEntity<AlumnoDTO> findByEmail(@PathVariable String email) {
+        Alumno alumno = service.findAlumnoByEmail(email).orElse(null);
+        if (alumno == null) {
+            throw new AlumnoNotFoundException(email);
         } else {
             return ResponseEntity.ok(mapper.toDTO(alumno));
         }
@@ -181,7 +200,78 @@ public class AlumnoController {
         checkData(alumno);
 
         if (!file.isEmpty()) {
-            String image =
+            String image = storageService.store(file);
+            String imageURL = storageService.getUrl(image);
+            alumno.setImage(imageURL);
         }
+
+        try {
+            Alumno savedAlumno = repository.save(alumno);
+            return ResponseEntity.ok(mapper.toDTO(savedAlumno));
+        } catch (AlumnoNotFoundException e) {
+            throw new GenericBadRequestException("Insert", "Could not insert Alumno; incorrect fields.");
+        }
+    }
+
+    @ApiOperation(value = "Finds all Alumno in a paged list.", notes = "Returns a paged, ordered and filtered list.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK", response = ListAlumnoPageDTO.class),
+            @ApiResponse(code = 400, message = "Bad Request", response = GenericBadRequestException.class)
+    })
+    @GetMapping("/all")
+    public ResponseEntity<?> pagedList(
+            @RequestParam(required = false, name = "name") Optional<String> name,
+            @RequestParam(required = false, name = "media") Optional<Double> media,
+            @RequestParam(required = false, name = "curso") Optional<String> cursoAcronym,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sort
+    ) {
+        Pageable paging = PageRequest.of(page, size, Sort.Direction.ASC, sort);
+        Page<Alumno> pagedResult;
+
+        try {
+            if (name.isPresent() && media.isPresent() && cursoAcronym.isPresent()) {
+                Page<Alumno> unfilteredPageResult = repository.findByNameContainsIgnoreCaseAndCurso_Acronym(name.get(), cursoAcronym.get(), paging);
+                pagedResult = filterList(media, paging, unfilteredPageResult);
+            } else if (name.isPresent()) {
+                pagedResult = repository.findByNameLikeIgnoreCase(name.get(), paging);
+            } else if (cursoAcronym.isPresent()) {
+                pagedResult = repository.findByCurso_Acronym(cursoAcronym.get(), paging);
+            } else if (media.isPresent()) {
+                Page<Alumno> unfilteredPageResult = repository.findAll(paging);
+                pagedResult = filterList(media, paging, unfilteredPageResult);
+            } else {
+                pagedResult = repository.findAll(paging);
+            }
+
+            ListAlumnoPageDTO lAlumnoPageDTO = ListAlumnoPageDTO.builder()
+                    .data(mapper.toDTO(pagedResult.getContent()))
+                    .totalPages(pagedResult.getTotalPages())
+                    .totalElements(pagedResult.getTotalElements())
+                    .currentPage(pagedResult.getNumber())
+                    .sort(pagedResult.getSort().toString())
+                    .build();
+            return ResponseEntity.ok(lAlumnoPageDTO);
+        } catch (Exception e) {
+            throw new GenericBadRequestException("Data selection", "Incorrect parameters.");
+        }
+    }
+
+    private Page<Alumno> filterList(@RequestParam(name = "media") Optional<Double> media, Pageable paging, Page<Alumno> unfilteredPageResult) {
+        ArrayList<Alumno> filteredList = new ArrayList<>();
+        for (Alumno a : unfilteredPageResult) {
+            double totalScore = 0;
+            for (Performance p : a.getModulos()) {
+                totalScore += p.getCalificacion();
+            }
+            double aMedia = totalScore / a.getModulos().size();
+            if (aMedia >= media.get()) {
+                filteredList.add(a);
+            }
+        }
+        final int start = (int)paging.getOffset();
+        final int end = Math.min((start + paging.getPageSize()), filteredList.size());
+        return new PageImpl<>(filteredList.subList(start, end), paging, filteredList.size());
     }
 }

@@ -14,6 +14,8 @@ import java.util.UUID;
 public interface CursoRepository extends JpaRepository<Curso, UUID> {
     Optional<List<Curso>> findByNameLikeIgnoreCase(String name);
     Optional<Page<Curso>> findByNameLikeIgnoreCase(String name, Pageable pageable);
+    Optional<Page<Curso>> findByNumber(int number, Pageable pageable);
+    Optional<Page<Curso>> findByNameLikeIgnoreCaseAndNumber(String name, int number, Pageable pageable);
 
     Optional<Curso> findByAcronym(String acronym);
 }

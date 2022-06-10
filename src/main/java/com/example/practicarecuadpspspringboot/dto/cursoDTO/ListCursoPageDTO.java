@@ -22,4 +22,6 @@ public class ListCursoPageDTO {
     private long totalElements;
 
     private int totalPages;
+
+    private String sort;
 }
